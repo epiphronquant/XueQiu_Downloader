@@ -13,7 +13,7 @@ import base64
 from io import BytesIO
 
 st.set_page_config(layout="wide")
-st.title('Xueqiu Downloader')
+st.title('XueQiu Downloader')
 
 def infinite_query(html, driver):
     table = None
