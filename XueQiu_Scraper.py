@@ -235,7 +235,7 @@ with column_2:##### Download various information chart
     
     statement2 = st.selectbox(
              'What would you like to download?',
-             ('Stock Data', 'Company data'))
+             ('Stock Data', 'Company Data'))
     st.write('You selected:', statement2)
     @st.cache
     def download_various (tickers2, statement2):
