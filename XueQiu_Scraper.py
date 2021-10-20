@@ -235,7 +235,7 @@ with column_2:##### Download various information chart
             table = table.iloc[:,-1]
             table = table.str.split('：', expand = True)
             table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
+            table.iloc[0] = ticker2
             tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
             driver.delete_all_cookies()
             driver.quit()
@@ -253,7 +253,7 @@ with column_2:##### Download various information chart
             table = table [0]
             table = table.iloc [:,0:2]
             table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
+            table.iloc[0] = ticker2
             tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
             driver.delete_all_cookies()
             driver.quit()
