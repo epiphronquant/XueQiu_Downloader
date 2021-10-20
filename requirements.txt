@@ -2,3 +2,4 @@ streamlit==0.84.2
 pandas
 selenium
 seleniumbase
+lxml
