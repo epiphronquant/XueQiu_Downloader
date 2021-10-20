@@ -50,7 +50,10 @@ def convert(chinese):
                         base, currentUnit = base * units[chinese[j]], chinese[j]
             number = number + base
     return number
-
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 column_1, column_2 = st.beta_columns(2) ### Divides page into 2 columns
 
 with column_1:### ### Download Statements chart
@@ -69,12 +72,13 @@ with column_1:### ### Download Statements chart
              ('Income Statement','Balance Sheet', 'Cash Flow', 'Top 10 Shareholders', 'Top 10 Traded Shareholders'))
     st.write('You selected:', statement)
 
+
     if tickers == ['']:
         tables = pd.DataFrame()
     elif statement == 'Top 10 Shareholders':   
         tables = pd.DataFrame()
         for ticker in tickers:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/SDGD") ### go to website
             time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -109,7 +113,7 @@ with column_1:### ### Download Statements chart
         tables = pd.DataFrame()
         ### this is for gathering data on the top 10 most selling or buying holders
         for ticker in tickers:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/LTGD") ### go to website
             time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -142,7 +146,7 @@ with column_1:### ### Download Statements chart
         tables = pd.DataFrame()
         ### this is for gathering data on the income statement
         for ticker in tickers:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/GSLRB") ### go to website
             time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -162,7 +166,7 @@ with column_1:### ### Download Statements chart
         tables = pd.DataFrame()
         ### this is for gathering data on the balance sheet
         for ticker in tickers:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/ZCFZB") ### go to website
             time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -181,7 +185,7 @@ with column_1:### ### Download Statements chart
         tables = pd.DataFrame()
         ### this is for gathering data on the Cash Flow Statement
         for ticker in tickers:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/XJLLB") ### go to website
             time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -219,7 +223,7 @@ with column_2:##### Download various information chart
         tables2 = pd.DataFrame()
         ### this is for gathering key stock and valuation
         for ticker2 in tickers2:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/S/" + ticker2 ) ### go to website
             # time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
@@ -239,7 +243,7 @@ with column_2:##### Download various information chart
         tables2 = pd.DataFrame()
         ### this is for gathering company introduction
         for ticker2 in tickers2:
-            driver = webdriver.Chrome() ### use google chrome
+            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
             driver.get("https://xueqiu.com/S/" + ticker2+ "/detail#/GSJJ") ### go to website
             time.sleep(.5) ### gives time for page to load. This is a xueqiu specific solution
             html = driver.page_source ## gather and read HTML    
