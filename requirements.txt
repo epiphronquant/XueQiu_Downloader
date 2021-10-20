@@ -4,3 +4,4 @@ selenium
 seleniumbase
 lxml
 html5lib
+xlsxwriter
