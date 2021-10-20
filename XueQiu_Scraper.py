@@ -7,6 +7,7 @@ Created on Mon Oct 18 12:28:47 2021
 
 import streamlit as st
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
 
