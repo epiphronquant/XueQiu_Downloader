@@ -103,7 +103,7 @@ with column_1:### ### Download Statements chart
                 table = infinite_query(html, driver)
                 ### Clean data
                 table = table [0]
-                table = table.iloc [:,0:3]
+                table = table.iloc [:,0:4]
                 table.columns = table.columns.droplevel()
                 abc = table ['持股数量']
                 abc2 = abc.str[-1]
@@ -138,7 +138,7 @@ with column_1:### ### Download Statements chart
                 table = infinite_query(html, driver)
                 ### Clean data
                 table = table [0]
-                table = table.iloc [:,0:3]
+                table = table.iloc [:,0:4]
                 table.columns = table.columns.droplevel()
                 abc = table ['持股数量']
                 abc2 = abc.str[-1]
