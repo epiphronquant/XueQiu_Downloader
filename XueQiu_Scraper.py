@@ -59,7 +59,7 @@ column_1, column_2 = st.beta_columns(2) ### Divides page into 2 columns
 
 with column_1:### ### Download Statements chart
     st.header ('Download Statements')
-    tickers = st.text_input("Type in Chinese tickers in the format 12345, SH123456, SZ123456 for HKEX, SHSE and SZSE stocks respectively")
+    tickers = st.text_input("Type in Chinese ticker/tickers in the format 12345, SH123456, SZ123456 for HKEX, SHSE and SZSE stocks respectively")
     tickers = tickers.split(',')
     tickers = map(str.strip, tickers)
     tickers = list(tickers)
