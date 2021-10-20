@@ -209,7 +209,7 @@ with column_1:### ### Download Statements chart
 
 with column_2:##### Download various information chart
     st.header ('Download Various Other Information')
-    tickers2 = st.text_input("Type in Chinese tickers")
+    tickers2 = st.text_input("Type in Chinese tickers but NOT HKEX tickers for Stock Data")
     tickers2 = tickers2.split(',') 
     tickers2 = map(str.strip, tickers2)
     tickers2 = list(tickers2)
