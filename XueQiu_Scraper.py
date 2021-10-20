@@ -51,6 +51,21 @@ def convert(chinese):
                         base, currentUnit = base * units[chinese[j]], chinese[j]
             number = number + base
     return number
+def to_excel(df):
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        df.to_excel(writer, sheet_name='Sheet1', index = True)
+        writer.save()
+        processed_data = output.getvalue()
+        return processed_data
+def get_table_download_link(df):
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    val = to_excel(df)
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download xlsx</a>' # decode b'abc' => abc    
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
@@ -204,6 +219,7 @@ with column_1:### ### Download Statements chart
     e = tables.astype(str) 
     # e = e.T.reset_index(drop=True).T
     st.dataframe(e)
+    st.markdown(get_table_download_link(tables), unsafe_allow_html=True)
 
 
 
@@ -258,3 +274,5 @@ with column_2:##### Download various information chart
             driver.delete_all_cookies()
             driver.quit()
     tables2 
+    st.markdown(get_table_download_link(tables2), unsafe_allow_html=True)
+
