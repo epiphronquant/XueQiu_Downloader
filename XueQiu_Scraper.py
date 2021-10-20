@@ -10,6 +10,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
+import base64
+from io import BytesIO
 
 st.set_page_config(layout="wide")
 st.title('Xueqiu Downloader')
