@@ -3,3 +3,4 @@ pandas
 selenium
 seleniumbase
 lxml
+html5lib
