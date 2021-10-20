@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 18 12:28:47 2021
-
 @author: angus
 """
 
@@ -16,7 +15,7 @@ from io import BytesIO
 st.set_page_config(layout="wide")
 st.title('Xueqiu Downloader')
 
-def infinite_query(html):
+def infinite_query(html, driver):
     table = None
     while table is None:
         try: 
@@ -89,135 +88,137 @@ with column_1:### ### Download Statements chart
              'What would you like to download?',
              ('Income Statement','Balance Sheet', 'Cash Flow', 'Top 10 Shareholders', 'Top 10 Traded Shareholders'))
     st.write('You selected:', statement)
-
-
-    if tickers == ['']:
-        tables = pd.DataFrame()
-    elif statement == 'Top 10 Shareholders':   
-        tables = pd.DataFrame()
-        for ticker in tickers:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/SDGD") ### go to website
-            time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            ### Clean data
-            table = table [0]
-            table = table.iloc [:,0:3]
-            table.columns = table.columns.droplevel()
-            abc = table ['持股数量']
-            abc2 = abc.str[-1]
-            abc = abc.str[:-1]   
-            abc2 = '一' + abc2
-            a = []
-            for numbers in abc2:
-                b = convert (numbers)
-                a.append(b)
-            a = pd.DataFrame(a, columns = ['持股数量'])
-            abc = pd.DataFrame(abc)
-            abc = abc.astype(float)
-            df3 = a.mul(abc.values)
-            table ['持股数量'] = df3
-            table = table.T.reset_index(drop=False).T
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
-            tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
-
-        
-    elif statement == 'Top 10 Traded Shareholders':
-        tables = pd.DataFrame()
-        ### this is for gathering data on the top 10 most selling or buying holders
-        for ticker in tickers:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/LTGD") ### go to website
-            time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            ### Clean data
-            table = table [0]
-            table = table.iloc [:,0:3]
-            table.columns = table.columns.droplevel()
-            abc = table ['持股数量']
-            abc2 = abc.str[-1]
-            abc = abc.str[:-1]   
-            abc2 = '一' + abc2
-            a = []
-            for numbers in abc2:
-                b = convert (numbers)
-                a.append(b)
-            a = pd.DataFrame(a, columns = ['持股数量'])
-            abc = pd.DataFrame(abc)
-            abc = abc.astype(float)
-            df3 = a.mul(abc.values)
-            table ['持股数量'] = df3
-            table = table.T.reset_index(drop=False).T
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
-            tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
-    elif statement == 'Income Statement':
-        tables = pd.DataFrame()
-        ### this is for gathering data on the income statement
-        for ticker in tickers:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/GSLRB") ### go to website
-            time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            ### Clean data
-            table = table [0]
-            table = table.iloc[:,1:]
-            table = table.T.reset_index(drop=False).T
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
-            tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
+    @st.cache
+    def download(tickers, statement):
+        if tickers == ['']:
+            tables = pd.DataFrame()
+        elif statement == 'Top 10 Shareholders':   
+            tables = pd.DataFrame()
+            for ticker in tickers:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/SDGD") ### go to website
+                time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                ### Clean data
+                table = table [0]
+                table = table.iloc [:,0:3]
+                table.columns = table.columns.droplevel()
+                abc = table ['持股数量']
+                abc2 = abc.str[-1]
+                abc = abc.str[:-1]   
+                abc2 = '一' + abc2
+                a = []
+                for numbers in abc2:
+                    b = convert (numbers)
+                    a.append(b)
+                a = pd.DataFrame(a, columns = ['持股数量'])
+                abc = pd.DataFrame(abc)
+                abc = abc.astype(float)
+                df3 = a.mul(abc.values)
+                table ['持股数量'] = df3
+                table = table.T.reset_index(drop=False).T
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker
+                tables = pd.concat([tables,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
     
-    elif statement == 'Balance Sheet':
-        tables = pd.DataFrame()
-        ### this is for gathering data on the balance sheet
-        for ticker in tickers:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/ZCFZB") ### go to website
-            time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            ### Clean data
-            table = table [0]
-            table = table.iloc[:,1:]
-            table = table.T.reset_index(drop=False).T
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
-            tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
-    else:     
-        tables = pd.DataFrame()
-        ### this is for gathering data on the Cash Flow Statement
-        for ticker in tickers:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/XJLLB") ### go to website
-            time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            ### Clean data
-            table = table [0]
-            table = table.iloc[:,1:]
-            table = table.T.reset_index(drop=False).T
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker
-            tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
+            
+        elif statement == 'Top 10 Traded Shareholders':
+            tables = pd.DataFrame()
+            ### this is for gathering data on the top 10 most selling or buying holders
+            for ticker in tickers:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/LTGD") ### go to website
+                time.sleep(2) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                ### Clean data
+                table = table [0]
+                table = table.iloc [:,0:3]
+                table.columns = table.columns.droplevel()
+                abc = table ['持股数量']
+                abc2 = abc.str[-1]
+                abc = abc.str[:-1]   
+                abc2 = '一' + abc2
+                a = []
+                for numbers in abc2:
+                    b = convert (numbers)
+                    a.append(b)
+                a = pd.DataFrame(a, columns = ['持股数量'])
+                abc = pd.DataFrame(abc)
+                abc = abc.astype(float)
+                df3 = a.mul(abc.values)
+                table ['持股数量'] = df3
+                table = table.T.reset_index(drop=False).T
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker
+                tables = pd.concat([tables,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+        elif statement == 'Income Statement':
+            tables = pd.DataFrame()
+            ### this is for gathering data on the income statement
+            for ticker in tickers:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/GSLRB") ### go to website
+                time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                ### Clean data
+                table = table [0]
+                table = table.iloc[:,1:]
+                table = table.T.reset_index(drop=False).T
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker
+                tables = pd.concat([tables,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+            
+        elif statement == 'Balance Sheet':
+            tables = pd.DataFrame()
+            ### this is for gathering data on the balance sheet
+            for ticker in tickers:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/ZCFZB") ### go to website
+                time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                ### Clean data
+                table = table [0]
+                table = table.iloc[:,1:]
+                table = table.T.reset_index(drop=False).T
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker
+                tables = pd.concat([tables,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+        else:     
+            tables = pd.DataFrame()
+            ### this is for gathering data on the Cash Flow Statement
+            for ticker in tickers:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/snowman/S/" + ticker + "/detail#/XJLLB") ### go to website
+                time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                ### Clean data
+                table = table [0]
+                table = table.iloc[:,1:]
+                table = table.T.reset_index(drop=False).T
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker
+                tables = pd.concat([tables,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+        return tables
+    tables = download(tickers, statement)
     e = tables.astype(str) 
     # e = e.T.reset_index(drop=True).T
     st.dataframe(e)
@@ -236,45 +237,48 @@ with column_2:##### Download various information chart
              'What would you like to download?',
              ('Stock Data', 'Company data'))
     st.write('You selected:', statement2)
-    if tickers2 == ['']:
-        tables2 = pd.DataFrame()
-    elif statement2 == 'Stock Data':
-        tables2 = pd.DataFrame()
-        ### this is for gathering key stock and valuation
-        for ticker2 in tickers2:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/S/" + ticker2 ) ### go to website
-            # time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            table = table [0]
-            table = table.stack().reset_index()
-            table = table.iloc[:,-1]
-            table = table.str.split('：', expand = True)
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker2
-            tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
-            
-    else:
-        tables2 = pd.DataFrame()
-        ### this is for gathering company introduction
-        for ticker2 in tickers2:
-            driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
-            driver.get("https://xueqiu.com/S/" + ticker2+ "/detail#/GSJJ") ### go to website
-            time.sleep(.5) ### gives time for page to load. This is a xueqiu specific solution
-            html = driver.page_source ## gather and read HTML    
-            ###refresh web page until chart shows up
-            table = infinite_query(html)
-            table = table [0]
-            table = table.iloc [:,0:2]
-            table = table.T.reset_index(drop=False).T
-            table.iloc[0] = ticker2
-            tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
-            driver.delete_all_cookies()
-            driver.quit()
-    tables2 
+    @st.cache
+    def download_various (tickers2, statement2):
+        if tickers2 == ['']:
+            tables2 = pd.DataFrame()
+        elif statement2 == 'Stock Data':
+            tables2 = pd.DataFrame()
+            ### this is for gathering key stock and valuation
+            for ticker2 in tickers2:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/S/" + ticker2 ) ### go to website
+                # time.sleep(1) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                table = table [0]
+                table = table.stack().reset_index()
+                table = table.iloc[:,-1]
+                table = table.str.split('：', expand = True)
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker2
+                tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+                
+        else:
+            tables2 = pd.DataFrame()
+            ### this is for gathering company introduction
+            for ticker2 in tickers2:
+                driver = webdriver.Chrome(chrome_options=chrome_options) ### use google chrome
+                driver.get("https://xueqiu.com/S/" + ticker2+ "/detail#/GSJJ") ### go to website
+                time.sleep(.5) ### gives time for page to load. This is a xueqiu specific solution
+                html = driver.page_source ## gather and read HTML    
+                ###refresh web page until chart shows up
+                table = infinite_query(html, driver)
+                table = table [0]
+                table = table.iloc [:,0:2]
+                table = table.T.reset_index(drop=False).T
+                table.iloc[0] = ticker2
+                tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
+                driver.delete_all_cookies()
+                driver.quit()
+        return tables2
+    tables2 = download_various(tickers2, statement2) 
+    tables2
     st.markdown(get_table_download_link(tables2), unsafe_allow_html=True)
-
