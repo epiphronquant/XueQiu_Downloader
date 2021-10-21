@@ -3,7 +3,6 @@
 Created on Mon Oct 18 12:28:47 2021
 @author: angus
 """
-
 import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -11,11 +10,10 @@ import pandas as pd
 import time
 import base64
 from io import BytesIO
-
+### configure page
 st.set_page_config(layout="wide")
 st.title('XueQiu Downloader')
-
-def infinite_query(html, driver):
+def infinite_query(html, driver):### function that refreshes page until it can gather the needed data
     table = None
     while table is None:
         try: 
@@ -30,7 +28,7 @@ def infinite_query(html, driver):
             except ValueError:
                 table = None
     return table
-def convert(chinese):
+def convert(chinese): ### converts Chinese numbers to int
     numbers = {'零':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9, '壹':1, '贰':2, '叁':3, '肆':4, '伍':5, '陆':6, '柒':7, '捌':8, '玖':9, '两':2, '廿':20, '卅':30, '卌':40, '虚':50, '圆':60, '近':70, '枯':80, '无':90}
     units = {'个':1, '十':10, '百':100, '千':1000, '万':10000, '亿':100000000, '拾':10, '佰':100, '仟':1000}
     number, pureNumber = 0, True
@@ -52,14 +50,14 @@ def convert(chinese):
                         base, currentUnit = base * units[chinese[j]], chinese[j]
             number = number + base
     return number
-def to_excel(df):
+def to_excel(df): ### converts a dataframe to excel
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         df.to_excel(writer, sheet_name='Sheet1', index = False, header = False)
         writer.save()
         processed_data = output.getvalue()
         return processed_data
-def get_table_download_link(df):
+def get_table_download_link(df): ### Hack that allows you to download the dataframe
     """Generates a link allowing the data in a given panda dataframe to be downloaded
     in:  dataframe
     out: href string
@@ -67,22 +65,19 @@ def get_table_download_link(df):
     val = to_excel(df)
     b64 = base64.b64encode(val)  # val looks like b'...'
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download xlsx</a>' # decode b'abc' => abc    
+### Options that allow chrome to run in streamlit
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-column_1, column_2 = st.beta_columns(2) ### Divides page into 2 columns
 
+column_1, column_2 = st.beta_columns(2) ### Divides page into 2 columns
 with column_1:### ### Download Statements chart
     st.header ('Download Statements')
     tickers = st.text_input("Type in Chinese ticker/tickers in the format 12345, SH123456, SZ123456 for HKEX, SHSE and SZSE stocks respectively")
     tickers = tickers.split(',')
     tickers = map(str.strip, tickers)
     tickers = list(tickers)
-    
-    # tickers = ['SH603392', 'SZ000858', 'SH601318','SZ000422']
-    
-    
     #### This is for gathering data on the top 10 largest shareholders
     statement = st.selectbox(
              'What would you like to download?',
@@ -123,9 +118,7 @@ with column_1:### ### Download Statements chart
                 table.iloc[0] = ticker
                 tables = pd.concat([tables,table], ignore_index=False, axis = 1)
                 driver.delete_all_cookies()
-                driver.quit()
-    
-            
+                driver.quit()   
         elif statement == 'Top 10 Traded Shareholders':
             tables = pd.DataFrame()
             ### this is for gathering data on the top 10 most selling or buying holders
@@ -223,16 +216,12 @@ with column_1:### ### Download Statements chart
     # e = e.T.reset_index(drop=True).T
     st.dataframe(e)
     st.markdown(get_table_download_link(tables), unsafe_allow_html=True)
-
-
-
 with column_2:##### Download various information chart
     st.header ('Download Various Other Information')
     tickers2 = st.text_input("Type in Chinese tickers but NOT HKEX tickers")
     tickers2 = tickers2.split(',') 
     tickers2 = map(str.strip, tickers2)
     tickers2 = list(tickers2)
-    
     statement2 = st.selectbox(
              'What would you like to download?',
              ('Stock Data', 'Company Data'))
@@ -259,8 +248,7 @@ with column_2:##### Download various information chart
                 table.iloc[0] = ticker2
                 tables2 = pd.concat([tables2,table], ignore_index=False, axis = 1)
                 driver.delete_all_cookies()
-                driver.quit()
-                
+                driver.quit()       
         else:
             tables2 = pd.DataFrame()
             ### this is for gathering company introduction
