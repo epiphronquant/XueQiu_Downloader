@@ -26,8 +26,7 @@ def infinite_query(ticker, xq_exten, sleep_time):### function that refreshes pag
         except ValueError:
             driver.refresh()
             time.sleep(4)
-            ## gather and read HTML
-            html = driver.page_source
+            html = driver.page_source## gather and read HTML
             try: 
                 table = pd.read_html(html)
             except ValueError:
@@ -85,16 +84,16 @@ with column_1:### ### Download Statements chart
     tickers = tickers.split(',')
     tickers = map(str.strip, tickers)
     tickers = list(tickers)
-    #### This is for gathering data on the top 10 largest shareholders
     statement = st.selectbox(
              'What would you like to download?',
              ('Income Statement','Balance Sheet', 'Cash Flow', 'Top 10 Shareholders', 'Top 10 Traded Shareholders'))
     st.write('You selected:', statement)
     @st.cache
     def download(tickers, statement):
-        if tickers == ['']:
+        if tickers == ['']:### Makes function not run if there is no input
             tables = pd.DataFrame()
         elif statement == 'Top 10 Shareholders':   
+            ### this is for gathering data on the top 10 largest shareholders
             tables = pd.DataFrame()
             for ticker in tickers:
                 table = infinite_query(ticker, "/detail#/SDGD",2)
@@ -119,7 +118,6 @@ with column_1:### ### Download Statements chart
                 table = table.T.reset_index(drop=False).T
                 table.iloc[0] = ticker
                 tables = pd.concat([tables,table], ignore_index=False, axis = 1)
-
         elif statement == 'Top 10 Traded Shareholders':
             tables = pd.DataFrame()
             ### this is for gathering data on the top 10 most selling or buying holders
@@ -185,7 +183,6 @@ with column_1:### ### Download Statements chart
         return tables
     tables = download(tickers, statement)
     e = tables.astype(str) 
-    # e = e.T.reset_index(drop=True).T
     st.dataframe(e)
     st.markdown(get_table_download_link(tables), unsafe_allow_html=True)
 with column_2:##### Download various information chart
@@ -200,13 +197,14 @@ with column_2:##### Download various information chart
     st.write('You selected:', statement2)
     @st.cache
     def download_various (tickers2, statement2):
-        if tickers2 == ['']:
+        if tickers2 == ['']:### make sure the function doesn't run if there is no data inputted
             tables2 = pd.DataFrame()
         elif statement2 == 'Stock Data':
             tables2 = pd.DataFrame()
             ### this is for gathering key stock and valuation
             for ticker2 in tickers2:
                 table = infinite_query(ticker2,"", .5)
+                ### clean data
                 table = table [0]
                 table = table.stack().reset_index()
                 table = table.iloc[:,-1]
@@ -219,6 +217,7 @@ with column_2:##### Download various information chart
             ### this is for gathering company introduction
             for ticker2 in tickers2:
                 table = infinite_query(ticker2,"/detail#/GSJJ", .5)
+                ### clean data
                 table = table [0]
                 table = table.iloc [:,0:2]
                 table = table.T.reset_index(drop=False).T
