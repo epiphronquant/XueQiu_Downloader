@@ -2,7 +2,7 @@
 
 Go to https://share.streamlit.io/epiphronquant/xueqiu_downloader/main/XueQiu_Scraper.py to use the app
 
-XueQiu only has data on HKEX, Chinese stocks, American stocks. Yahoo Finance has data on almost all stocks but the scraper lacks in the quality of this scraper.
+XueQiu only has data on HKEX, Chinese stocks, American stocks. Yahoo Finance has data on almost all stocks but Yahoo Downloader lacks in the quality of XueQiu Downloader.
 
 In contrast to Yahoo Downloader, I personally had to develop a solution to scrape data from XueQiu. 
 This involved using "selenium" which opens a google chrome window to the url, and uses "pandas" to scrape and clean tables from the open chrome window. Options then click the window to select the correspoding reports and scrapes them accordingly. 
