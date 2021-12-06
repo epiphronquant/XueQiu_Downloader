@@ -5,3 +5,4 @@ seleniumbase
 lxml
 html5lib
 xlsxwriter
+multitasking
