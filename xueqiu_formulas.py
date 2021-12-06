@@ -229,6 +229,7 @@ def infinite_query_threaded_compintro(ticker2, tables2):
 @multitasking.task # <== this is all it takes :-)
 def infinite_query_threaded_statements(ticker1, xq_exten, tables2, freq):
     table = infinite_query(ticker1, xq_exten, 1, freq = freq, statement = True)
+    table = convert_table(table)
     ### clean data
     table = table.T.reset_index(drop=False).T
     table = table.T.reset_index(drop=False).T
