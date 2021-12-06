@@ -33,6 +33,8 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
         try:
             int(ticker) ### only HKEX stocks get caught up in this logic
             sleep(1) ### gives time for page to load. This is a xueqiu specific solution
+            button= driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[1]/div[3]/a')### selects button 
+            button.click()
             button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
             button.click()
         except ValueError:
