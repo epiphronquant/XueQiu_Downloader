@@ -14,18 +14,18 @@ import pandas as pd
 import multitasking
 
 ### Options that allow chrome to run in streamlit
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+# chrome_options = Options()
+# chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--no-sandbox')
+# chrome_options.add_argument('--disable-dev-shm-usage')
 
 def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data = False, statement = False):
     '''A heavily XueQiu customized function that refreshes page until it can gather the needed data
     in: str, str, int, str, bool, bool
     out: dataframe or list of dataframes
     '''
-    driver = webdriver.Chrome(options=chrome_options) ### use google chrome
-    # driver = webdriver.Chrome()
+    # driver = webdriver.Chrome(options=chrome_options) ### use google chrome
+    driver = webdriver.Chrome()
     driver.get("https://xueqiu.com/snowman/S/" + ticker + xq_exten) ### go to website
     sleep(1) ### gives time for page to load
     if stock_data == True: ### This is for gathering HKEX stock data
@@ -277,7 +277,7 @@ def infinite_query_threaded_shareholder(ticker1,tables2, xq_exten):
         table0 = pd.concat([table0, table])
     table0 = table0.reset_index(drop = True)
     tables2.append(table0)
-def org_table(tables, tickers, row = 0):
+def org_table(tickers, tables, row = 0):
     """organizes a list of tables into one dataframe in the order of specified tickers.
     Row points to which row to look at in the tables to match with the tickers
     in:  list of dataframes, list, int
