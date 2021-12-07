@@ -38,7 +38,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_shareholder(ticker, tables, "/detail#/SDGD") ### this downloads the data but completes in different order
             while len(tables) < len(tickers): ### this must be modified for shareholder data
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe in orderly fashion
+            tables = xf.org_table(tickers, tables, row = 1) ### convert list of tables to dataframe in orderly fashion
             
         elif statement == 'Top 10 Traded Shareholders':
             tickers =[x for x in tickers if len(x)==8]
@@ -47,7 +47,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_shareholder(ticker, tables, "/detail#/LTGD") ### this downloads the data but completes in different order
             while len(tables) < len(tickers): ### this must be modified for shareholder data
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables, row = 1) ### convert list of tables to dataframe
             
         elif statement == 'Income Statement':
             ### this is for gathering data on the income statement
@@ -56,7 +56,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_statements(ticker, tables, "/detail#/GSLRB", freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
             
         elif statement == 'Balance Sheet':
             tables = []
@@ -64,7 +64,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_statements(ticker, tables, "/detail#/ZCFZB", freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
         
         else:     
             tables = []
@@ -72,7 +72,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_statements(ticker, tables, "/detail#/XJLLB", freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
         return tables
     tables = download(tickers, statement, freq)
     e = tables.astype(str) 
@@ -99,7 +99,7 @@ with column_2:##### Download various information chart
                 xf.infinite_query_threaded_stockdata(ticker2, tables2) ### this downloads the data but completes in different order
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            tables2 = xf.org_table(tables2,tickers2) ### convert list of tables to dataframe
+            tables2 = xf.org_table(tickers2, tables2) ### convert list of tables to dataframe
         else:
             ### this is for gathering company introduction
             tables2 = []
@@ -107,7 +107,7 @@ with column_2:##### Download various information chart
                 xf.infinite_query_threaded_compintro(ticker2, tables2) ### this downloads the data but completes in different order
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            tables2 = xf.org_table(tables2,tickers2) ### convert list of tables to dataframe
+            tables2 = xf.org_table(tickers2, tables2) ### convert list of tables to dataframe
         return tables2
 
     tables2 = download_various(tickers2, statement2) 
