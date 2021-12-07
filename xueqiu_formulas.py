@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 11 14:53:06 2021
-
 @author: angus
 """
 import numpy as np
@@ -271,3 +270,26 @@ def infinite_query_threaded_shareholder(ticker1, xq_exten, tables2, freq = "å…¨é
         table0 = pd.concat([table0, table])
     table0 = table0.reset_index(drop = True)
     tables2.append(table0)
+    
+def org_table(tables, tickers, row = 0):
+    """organizes a list of tables into one dataframe in the order of specified tickers.
+    Row points to which row to look at in the tables to match with the tickers
+    in:  list of tables 
+    out: dataframe
+    """
+    tables8 = pd.DataFrame()
+    while len(tickers) > 0:
+        y = tickers[0]
+        abc = len(tickers)
+        abc = list(range(0, abc))
+        for number in abc:
+            try: 
+                tables3 = tables [number]
+                x = tables3.iloc[row, tables3.columns[0]]
+                if x == y:
+                    tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
+                    tables = tables[:number]+ tables[number+1:]
+                    tickers = tickers[1:]
+            except IndexError:
+                pass
+    return tables8
