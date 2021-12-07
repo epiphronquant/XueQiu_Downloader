@@ -18,47 +18,44 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-
-def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data = False, statement = False):
+def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data = False, statement = False): ### God function
     '''A heavily XueQiu customized function that refreshes page until it can gather the needed data
     in: str, str, int, str, bool, bool
     out: dataframe or list of dataframes
     '''
     driver = webdriver.Chrome(options=chrome_options) ### use google chrome
-    # driver = webdriver.Chrome()
     driver.get("https://xueqiu.com/snowman/S/" + ticker + xq_exten) ### go to website
     sleep(1) ### gives time for page to load
     if stock_data == True: ### This is for gathering HKEX stock data
         try:
             int(ticker) ### only HKEX stocks get caught up in this logic
             try:
-                button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
+                button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button to access HKEX data
                 button.click()
             except:
-                button= driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[1]/div[3]/a')### selects button 
+                button= driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[1]/div[3]/a')### selects button to close popup
                 button.click()
                 button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
                 button.click()
         except ValueError:
             pass
     else:
+        pass    
+    if freq == '全部': 
         pass
-    
-    if freq == '全部': ### selects the frequency
-        pass
-    else:
+    else: ### clicks the respective frequency button
         path = "//span[contains(@class,'btn') and contains(text(), '"+ freq +"')]"
         button= driver.find_element_by_xpath(path)### selects button 
         button.click()
-    sleep(sleep_time) ### gives time for page to load. This is a xueqiu specific solution
+    sleep(sleep_time) ### gives time for page to load. This is customized below and depends on use case
     html = driver.page_source ## gather and read HTML       
-    if statement == True:
+    if statement == True: ### only statements data need to be compared, selected and collected
         ### initialize dataframe
         statements = pd.DataFrame()
         ### gathers first chart
         html = driver.page_source ## gather and read HTML    
         statement1 = None
-        while statement1 is None:
+        while statement1 is None: ### keeps on refreshing page until it can gather statement data
             try: 
                 statement1 = pd.read_html(html)
             except ValueError:
@@ -69,7 +66,6 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
                     statement1 = pd.read_html(html) 
                 except ValueError:
                     statement1 = None
-        
         statement1 = statement1 [0]
         statement1 = statement1.set_index(statement1.columns [0]) ### sets an index so that the data is merged rather than directly concated
         statements = pd.concat([statements,statement1], ignore_index=False, axis = 1)
@@ -85,16 +81,14 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
         html = driver.page_source ## gather and read HTML    
         statement2 = pd.read_html(html)
         statement2 = statement2 [0]
-        statement2 = statement2.set_index(statement2.columns [0]) ### sets an index so that the data is merged rather than directly concated
-        
+        statement2 = statement2.set_index(statement2.columns [0]) ### sets an index so that the data is merged rather than directly concated        
         statement2l = statement2.values.tolist()
         
         ### compare first chart with second chart
         comparison = statement1l == statement2l
-        
-        while comparison is False:
+        while comparison is False: ### keeps on gathering new charts until the next chart is same as the previous one
             statement2_edit = statement2.iloc [:,2:]
-            statements = pd.concat([statements,statement2_edit], ignore_index=False, axis = 1)
+            statements = pd.concat([statements,statement2_edit], ignore_index=False, axis = 1) ### appends to initialized dataframe
             ### gathers first chart
             statement1 = statement2
             statement1l = statement1.values.tolist()        
@@ -111,7 +105,7 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
             comparison = statement1l == statement2l
         statements = statements.reset_index()
         table = statements
-    else:
+    else: ### keeps on refreshing the page until it's possible to gather table data
         table = None
         while table is None:
             try: 
@@ -197,35 +191,6 @@ def get_table_download_link(df): ### Hack that allows you to download the datafr
     b64 = base64.b64encode(val)  # val looks like b'...'
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download xlsx</a>' # decode b'abc' => abc    
 @multitasking.task # Threads the function so it runs (amount of CPU cores)x faster
-def infinite_query_threaded_stockdata(ticker2, tables2):
-    """Threads a function where we query, clean and append the data.
-    in:  str, list
-    out: list of dataframe
-    """
-    table = infinite_query(ticker2,"", .5, stock_data= True)
-    ### clean data
-    table = table [0]
-    table = table.stack().reset_index()
-    table = table.iloc[:,-1]
-    table = table.str.split('：', expand = True)
-    table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
-    table = table.T.reset_index(drop=False).T
-    table.iloc[0] = ticker2
-    tables2.append (table) ### appends it to the initialized list
-@multitasking.task # <== this is all it takes :-)
-def infinite_query_threaded_compintro(ticker2, tables2):
-    """Threads a function where we query, clean and append the data.
-    in:  str, list
-    out: list of dataframe
-    """
-    table = infinite_query(ticker2,"/detail#/GSJJ", .5)
-    table = table [0]
-    table = table.iloc [:,0:2]
-    table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
-    table = table.T.reset_index(drop=False).T
-    table.iloc[0] = ticker2
-    tables2.append (table) 
-@multitasking.task 
 def infinite_query_threaded_statements(ticker1, tables2, xq_exten, freq):
     """Threads a function where we query, clean and append the data while specifiying which frequency and statement to get.
     in:  str, list, str, str
@@ -233,19 +198,17 @@ def infinite_query_threaded_statements(ticker1, tables2, xq_exten, freq):
     """
     table = infinite_query(ticker1, xq_exten, 1, freq = freq, statement = True)
     table = convert_table(table)
-    ### clean data
     table = table.T.reset_index(drop=False).T
     table = table.T.reset_index(drop=False).T
     table.iloc[0] = ticker1
-    tables2.append (table)
-@multitasking.task 
+    tables2.append (table) ### appends it to the initialized list
+@multitasking.task # <== this is all it takes :-)
 def infinite_query_threaded_shareholder(ticker1,tables2, xq_exten):
-    """Threads a function where we query, clean and append the data while specifiying which statement to get.
+    """Threads a function where we query, clean and append the data for shareholder information.
     in:  str, list, str
     out: list of dataframe
     """
     tables0 = infinite_query(ticker1, xq_exten, 2, freq= '全部')
-    ### Clean data
     tables0 = tables0 [0:2]
     table0 = pd.DataFrame()
     for table in tables0:
@@ -277,9 +240,38 @@ def infinite_query_threaded_shareholder(ticker1,tables2, xq_exten):
         table0 = pd.concat([table0, table])
     table0 = table0.reset_index(drop = True)
     tables2.append(table0)
+@multitasking.task 
+def infinite_query_threaded_stockdata(ticker2, tables2):
+    """Threads a function where we query, clean and append stock data.
+    in:  str, list
+    out: list of dataframe
+    """
+    table = infinite_query(ticker2,"", .5, stock_data= True)
+    ### clean data
+    table = table [0]
+    table = table.stack().reset_index()
+    table = table.iloc[:,-1]
+    table = table.str.split('：', expand = True)
+    table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
+    table = table.T.reset_index(drop=False).T
+    table.iloc[0] = ticker2
+    tables2.append (table) 
+@multitasking.task 
+def infinite_query_threaded_compintro(ticker2, tables2):
+    """Threads a function where we query, clean and append company data.
+    in:  str, list
+    out: list of dataframe
+    """
+    table = infinite_query(ticker2,"/detail#/GSJJ", .5)
+    table = table [0]
+    table = table.iloc [:,0:2]
+    table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
+    table = table.T.reset_index(drop=False).T
+    table.iloc[0] = ticker2
+    tables2.append (table) 
 def org_table(tickers, tables, row = 0):
-    """organizes a list of tables into one dataframe in the order of specified tickers.
-    Row points to which row to look at in the tables to match with the tickers
+    """Organizes a list of tables into one dataframe in the order of specified tickers.
+    Row points to which row to look at in the tables to match with the tickers. Useful for organizing threaded output.
     in:  list of dataframes, list, int
     out: dataframe
     """
