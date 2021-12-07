@@ -96,7 +96,7 @@ with column_2:##### Download various information chart
         elif statement2 == 'Stock Data':
             tables2 = []
             for ticker2 in tickers2:
-                xf.infinite_query_threaded_stockdata(ticker2,"", .5, tables2, stock_data= True) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_stockdata(ticker2, tables2) ### this downloads the data but completes in different order
             while len(tables2) < len(tickers2):
                 sleep(0.01)
             tables2 = xf.org_table(tables2,tickers2) ### convert list of tables to dataframe
