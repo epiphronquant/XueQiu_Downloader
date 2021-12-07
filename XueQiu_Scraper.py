@@ -36,7 +36,7 @@ with column_1:### ### Download Statements chart
             tables = []
             for ticker in tickers:
                 xf.infinite_query_threaded_shareholder(ticker, tables, "/detail#/SDGD") ### this downloads the data but completes in different order
-            while len(tables) < len(tickers): ### this must be modified for shareholder data
+            while len(tables) < len(tickers): ### Waits for all the data to be gathered from thread pools before proceeding
                 sleep(0.01)
             tables = xf.org_table(tickers, tables, row = 1) ### convert list of tables to dataframe in orderly fashion
             
@@ -44,35 +44,34 @@ with column_1:### ### Download Statements chart
             tickers =[x for x in tickers if len(x)==8]
             tables = []
             for ticker in tickers:
-                xf.infinite_query_threaded_shareholder(ticker, tables, "/detail#/LTGD") ### this downloads the data but completes in different order
-            while len(tables) < len(tickers): ### this must be modified for shareholder data
+                xf.infinite_query_threaded_shareholder(ticker, tables, "/detail#/LTGD") 
+            while len(tables) < len(tickers): 
                 sleep(0.01)
-            tables = xf.org_table(tickers, tables, row = 1) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables, row = 1) 
             
         elif statement == 'Income Statement':
-            ### this is for gathering data on the income statement
             tables = []
             for ticker in tickers:
-                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/GSLRB", freq = freq) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/GSLRB", freq = freq) 
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) 
             
         elif statement == 'Balance Sheet':
             tables = []
             for ticker in tickers:
-                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/ZCFZB", freq = freq) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/ZCFZB", freq = freq) 
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) 
         
-        else:     
+        else: ## for cash flow statement
             tables = []
             for ticker in tickers:
-                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/XJLLB", freq = freq) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_statements(ticker, tables, "/detail#/XJLLB", freq = freq) 
             while len(tables) < len(tickers):
                 sleep(0.01)
-            tables = xf.org_table(tickers, tables) ### convert list of tables to dataframe
+            tables = xf.org_table(tickers, tables) 
         return tables
     tables = download(tickers, statement, freq)
     e = tables.astype(str) 
@@ -91,25 +90,23 @@ with column_2:##### Download various information chart
     st.write('You selected:', statement2)
     @st.cache
     def download_various (tickers2, statement2):
-        if tickers2 == ['']:### make sure the function doesn't run if there is no data inputted
+        if tickers2 == ['']:### makes sure the function doesn't run if there is no data inputted
             tables2 = pd.DataFrame()
         elif statement2 == 'Stock Data':
             tables2 = []
             for ticker2 in tickers2:
-                xf.infinite_query_threaded_stockdata(ticker2, tables2) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_stockdata(ticker2, tables2) 
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            tables2 = xf.org_table(tickers2, tables2) ### convert list of tables to dataframe
-        else:
-            ### this is for gathering company introduction
+            tables2 = xf.org_table(tickers2, tables2) 
+        else:  ### this is for gathering company introduction
             tables2 = []
             for ticker2 in tickers2:
-                xf.infinite_query_threaded_compintro(ticker2, tables2) ### this downloads the data but completes in different order
+                xf.infinite_query_threaded_compintro(ticker2, tables2) 
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            tables2 = xf.org_table(tickers2, tables2) ### convert list of tables to dataframe
+            tables2 = xf.org_table(tickers2, tables2) 
         return tables2
-
     tables2 = download_various(tickers2, statement2) 
     tables2
     st.markdown(xf.get_table_download_link(tables2), unsafe_allow_html=True)
