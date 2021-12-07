@@ -14,18 +14,18 @@ import pandas as pd
 import multitasking
 
 ### Options that allow chrome to run in streamlit
-# chrome_options = Options()
-# chrome_options.add_argument('--headless')
-# chrome_options.add_argument('--no-sandbox')
-# chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 
 def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data = False, statement = False):
     '''A heavily XueQiu customized function that refreshes page until it can gather the needed data
     in: str, str, int, str, bool, bool
     out: dataframe or list of dataframes
     '''
-    # driver = webdriver.Chrome(options=chrome_options) ### use google chrome
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(options=chrome_options) ### use google chrome
+    # driver = webdriver.Chrome()
     driver.get("https://xueqiu.com/snowman/S/" + ticker + xq_exten) ### go to website
     sleep(1) ### gives time for page to load
     if stock_data == True: ### This is for gathering HKEX stock data
