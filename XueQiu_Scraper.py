@@ -31,56 +31,24 @@ with column_1:### ### Download Statements chart
     def download(tickers, statement, freq):
         if tickers == ['']:### Makes function not run if there is no input
             tables = pd.DataFrame()
-        elif statement == 'Top 10 Shareholders':   
+        elif statement == 'Top 10 Shareholders': ### this is for gathering data on the top 10 largest shareholders            
             tickers =[x for x in tickers if len(x)==8]
-            ### this is for gathering data on the top 10 largest shareholders            
             tables = []
             for ticker in tickers:
                 xf.infinite_query_threaded_shareholder(ticker, "/detail#/SDGD", tables) ### this downloads the data but completes in different order
             while len(tables) < len(tickers): ### this must be modified for shareholder data
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers) > 0:
-                y = tickers[0]
-                abc = len(tickers)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables [number]
-                        x = tables3.iloc[1, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables = tables[:number]+ tables[number+1:]
-                            tickers = tickers[1:]
-                    except IndexError:
-                        pass
-            tables = tables8
+            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe
+            
         elif statement == 'Top 10 Traded Shareholders':
             tickers =[x for x in tickers if len(x)==8]
-            ### this is for gathering data on the top 10 largest shareholders            
             tables = []
             for ticker in tickers:
                 xf.infinite_query_threaded_shareholder(ticker, "/detail#/LTGD", tables) ### this downloads the data but completes in different order
             while len(tables) < len(tickers): ### this must be modified for shareholder data
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers) > 0:
-                y = tickers[0]
-                abc = len(tickers)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables [number]
-                        x = tables3.iloc[1, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables = tables[:number]+ tables[number+1:]
-                            tickers = tickers[1:]
-                    except IndexError:
-                        pass
-            tables = tables8
+            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe
+            
         elif statement == 'Income Statement':
             ### this is for gathering data on the income statement
             tables = []
@@ -88,46 +56,16 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_statements(ticker, "/detail#/GSLRB", tables, freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers) > 0:
-                y = tickers[0]
-                abc = len(tickers)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables [number]
-                        x = tables3.iloc[0, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables = tables[:number]+ tables[number+1:]
-                            tickers = tickers[1:]
-                    except IndexError:
-                        pass
-            tables = tables8
+            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
+            
         elif statement == 'Balance Sheet':
             tables = []
             for ticker in tickers:
                 xf.infinite_query_threaded_statements(ticker, "/detail#/ZCFZB", tables, freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers) > 0:
-                y = tickers[0]
-                abc = len(tickers)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables [number]
-                        x = tables3.iloc[0, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables = tables[:number]+ tables[number+1:]
-                            tickers = tickers[1:]
-                    except IndexError:
-                        pass
-            tables = tables8
+            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
+        
         else:     
             tables = []
             for ticker in tickers:
@@ -135,27 +73,13 @@ with column_1:### ### Download Statements chart
             while len(tables) < len(tickers):
                 sleep(0.01)
             ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers) > 0:
-                y = tickers[0]
-                abc = len(tickers)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables [number]
-                        x = tables3.iloc[0, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables = tables[:number]+ tables[number+1:]
-                            tickers = tickers[1:]
-                    except IndexError:
-                        pass
-            tables = tables8
+            tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
         return tables
     tables = download(tickers, statement, freq)
     e = tables.astype(str) 
     st.dataframe(e)
     st.markdown(xf.get_table_download_link(tables), unsafe_allow_html=True)
+
 with column_2:##### Download various information chart
     st.header ('Download Various Other Information')
     tickers2 = st.text_input("Type in ticker/tickers")
@@ -166,7 +90,6 @@ with column_2:##### Download various information chart
              'What would you like to download?',
              ('Stock Data', 'Company Data'))
     st.write('You selected:', statement2)
-    
     @st.cache
     def download_various (tickers2, statement2):
         if tickers2 == ['']:### make sure the function doesn't run if there is no data inputted
@@ -177,23 +100,7 @@ with column_2:##### Download various information chart
                 xf.infinite_query_threaded_stockdata(ticker2,"", .5, tables2, stock_data= True) ### this downloads the data but completes in different order
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers2) > 0:
-                y = tickers2[0]
-                abc = len(tickers2)
-                abc = list(range(0, abc))
-                for number in abc:
-                   try: 
-                        tables3 = tables2 [number]
-                        x = tables3.iloc[0, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables2 = tables2[:number]+ tables2[number+1:]
-                            tickers2 = tickers2[1:]
-                   except IndexError:
-                        pass
-            tables2 = tables8
+            tables2 = xf.org_table(tables2,tickers2) ### convert list of tables to dataframe
         else:
             ### this is for gathering company introduction
             tables2 = []
@@ -201,23 +108,7 @@ with column_2:##### Download various information chart
                 xf.infinite_query_threaded_compintro(ticker2, tables2) ### this downloads the data but completes in different order
             while len(tables2) < len(tickers2):
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
-            tables8 = pd.DataFrame()
-            while len(tickers2) > 0:
-                y = tickers2[0]
-                abc = len(tickers2)
-                abc = list(range(0, abc))
-                for number in abc:
-                    try: 
-                        tables3 = tables2 [number]
-                        x = tables3.iloc[0, tables3.columns[0]]
-                        if x == y:
-                            tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
-                            tables2 = tables2[:number]+ tables2[number+1:]
-                            tickers2 = tickers2[1:]
-                    except IndexError:
-                        pass
-            tables2 = tables8
+            tables2 = xf.org_table(tables2,tickers2) ### convert list of tables to dataframe
         return tables2
 
     tables2 = download_various(tickers2, statement2) 
