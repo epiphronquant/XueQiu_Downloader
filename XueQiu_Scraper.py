@@ -38,7 +38,7 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_shareholder(ticker, "/detail#/SDGD", tables) ### this downloads the data but completes in different order
             while len(tables) < len(tickers): ### this must be modified for shareholder data
                 sleep(0.01)
-            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe
+            tables = xf.org_table(tables,tickers, row = 1) ### convert list of tables to dataframe in orderly fashion
             
         elif statement == 'Top 10 Traded Shareholders':
             tickers =[x for x in tickers if len(x)==8]
@@ -72,7 +72,6 @@ with column_1:### ### Download Statements chart
                 xf.infinite_query_threaded_statements(ticker, "/detail#/XJLLB", tables, freq = freq) ### this downloads the data but completes in different order
             while len(tables) < len(tickers):
                 sleep(0.01)
-            ### clean tables2 to old level of cleanliness
             tables = xf.org_table(tables,tickers) ### convert list of tables to dataframe
         return tables
     tables = download(tickers, statement, freq)
