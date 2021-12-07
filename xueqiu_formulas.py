@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 11 14:53:06 2021
+
 @author: angus
 """
-import numpy as np
+from numpy import nan
 from time import sleep
 import base64
 from io import BytesIO
@@ -19,23 +20,25 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
 def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data = False, statement = False):
-    '''Heavily Xueqiu customized function that refreshes page until it can gather the needed data
+    '''A heavily XueQiu customized function that refreshes page until it can gather the needed data
     in: str, str, int, str, bool, bool
     out: dataframe or list of dataframes
     '''
     driver = webdriver.Chrome(options=chrome_options) ### use google chrome
+    # driver = webdriver.Chrome()
     driver.get("https://xueqiu.com/snowman/S/" + ticker + xq_exten) ### go to website
-    sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-    # time.sleep(sleep_time) ### gives time for page to load. This is a xueqiu specific solution
-    
+    sleep(1) ### gives time for page to load
     if stock_data == True: ### This is for gathering HKEX stock data
         try:
             int(ticker) ### only HKEX stocks get caught up in this logic
-            sleep(1) ### gives time for page to load. This is a xueqiu specific solution
-            button= driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[1]/div[3]/a')### selects button 
-            button.click()
-            button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
-            button.click()
+            try:
+                button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
+                button.click()
+            except:
+                button= driver.find_element_by_xpath('/html/body/div[1]/div[3]/div[1]/div[3]/a')### selects button 
+                button.click()
+                button= driver.find_element_by_xpath('/html/body/div/div[2]/div[2]/div[5]/a')### selects button 
+                button.click()
         except ValueError:
             pass
     else:
@@ -50,7 +53,7 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
     sleep(sleep_time) ### gives time for page to load. This is a xueqiu specific solution
     html = driver.page_source ## gather and read HTML       
     if statement == True:
-            ### initialize dataframe
+        ### initialize dataframe
         statements = pd.DataFrame()
         ### gathers first chart
         html = driver.page_source ## gather and read HTML    
@@ -69,12 +72,8 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
         
         statement1 = statement1 [0]
         statement1 = statement1.set_index(statement1.columns [0]) ### sets an index so that the data is merged rather than directly concated
-        # statement1 = statement1.iloc [:,1:]
-        
         statements = pd.concat([statements,statement1], ignore_index=False, axis = 1)
         statements = statements.set_index(statements.columns [0]) ### sets an index so that the data is merged rather than directly concated
-        # statements = statements.iloc [:,1:]
-        
         statement1l = statement1.values.tolist()
         
         ### press button to gather next chart
@@ -108,12 +107,9 @@ def infinite_query(ticker, xq_exten, sleep_time,  freq = "全部",  stock_data =
             statement2 = pd.read_html(html)
             statement2 = statement2 [0]
             statement2 = statement2.set_index(statement2.columns [0]) ### sets an index so that the data is merged rather than directly concated
-            # statement2 = statement2.iloc [:,1:]
-        
             statement2l = statement2.values.tolist()
             comparison = statement1l == statement2l
         statements = statements.reset_index()
-        # statements = convert_table(statements)
         table = statements
     else:
         table = None
@@ -175,7 +171,7 @@ def convert_table(table):
             a.append(b)
         a = pd.DataFrame(a, columns = [column])
         abc = pd.DataFrame(abc)
-        abc = abc.replace(r'^\s*$', np.nan, regex=True)
+        abc = abc.replace(r'^\s*$', nan, regex=True)
         abc = abc.astype(float)
         df3 = a.mul(abc.values)
         df3 = df3.round(2)
@@ -200,10 +196,14 @@ def get_table_download_link(df): ### Hack that allows you to download the datafr
     val = to_excel(df)
     b64 = base64.b64encode(val)  # val looks like b'...'
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download xlsx</a>' # decode b'abc' => abc    
-
-@multitasking.task # <== this is all it takes :-)
-def infinite_query_threaded_stockdata(ticker2, xq_exten, sleep_time, tables2,  freq = '全部',  stock_data = False, statement = False):
+@multitasking.task # Threads the function so it runs (amount of CPU cores)x faster
+def infinite_query_threaded_stockdata(ticker2, tables2):
+    """Threads a function where we query, clean and append the data.
+    in:  str, list
+    out: list of dataframe
+    """
     table = infinite_query(ticker2,"", .5, stock_data= True)
+    ### clean data
     table = table [0]
     table = table.stack().reset_index()
     table = table.iloc[:,-1]
@@ -211,22 +211,26 @@ def infinite_query_threaded_stockdata(ticker2, xq_exten, sleep_time, tables2,  f
     table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
     table = table.T.reset_index(drop=False).T
     table.iloc[0] = ticker2
-    tables2.append (table)
-
-
+    tables2.append (table) ### appends it to the initialized list
 @multitasking.task # <== this is all it takes :-)
 def infinite_query_threaded_compintro(ticker2, tables2):
+    """Threads a function where we query, clean and append the data.
+    in:  str, list
+    out: list of dataframe
+    """
     table = infinite_query(ticker2,"/detail#/GSJJ", .5)
-    ### clean data
     table = table [0]
     table = table.iloc [:,0:2]
     table = table.set_index(table.columns [0]) ### sets an index so that the data is merged rather than directly concated
     table = table.T.reset_index(drop=False).T
     table.iloc[0] = ticker2
-    tables2.append (table)
-    
-@multitasking.task # <== this is all it takes :-)
-def infinite_query_threaded_statements(ticker1, xq_exten, tables2, freq):
+    tables2.append (table) 
+@multitasking.task 
+def infinite_query_threaded_statements(ticker1, tables2, xq_exten, freq):
+    """Threads a function where we query, clean and append the data while specifiying which frequency and statement to get.
+    in:  str, list, str, str
+    out: list of dataframe
+    """
     table = infinite_query(ticker1, xq_exten, 1, freq = freq, statement = True)
     table = convert_table(table)
     ### clean data
@@ -234,10 +238,13 @@ def infinite_query_threaded_statements(ticker1, xq_exten, tables2, freq):
     table = table.T.reset_index(drop=False).T
     table.iloc[0] = ticker1
     tables2.append (table)
-    
-@multitasking.task # <== this is all it takes :-)
-def infinite_query_threaded_shareholder(ticker1, xq_exten, tables2, freq = "全部"):
-    tables0 = infinite_query(ticker1, xq_exten, 2, freq=freq)
+@multitasking.task 
+def infinite_query_threaded_shareholder(ticker1,tables2, xq_exten):
+    """Threads a function where we query, clean and append the data while specifiying which statement to get.
+    in:  str, list, str
+    out: list of dataframe
+    """
+    tables0 = infinite_query(ticker1, xq_exten, 2, freq= '全部')
     ### Clean data
     tables0 = tables0 [0:2]
     table0 = pd.DataFrame()
@@ -270,11 +277,10 @@ def infinite_query_threaded_shareholder(ticker1, xq_exten, tables2, freq = "全�
         table0 = pd.concat([table0, table])
     table0 = table0.reset_index(drop = True)
     tables2.append(table0)
-    
 def org_table(tables, tickers, row = 0):
     """organizes a list of tables into one dataframe in the order of specified tickers.
     Row points to which row to look at in the tables to match with the tickers
-    in:  list of tables 
+    in:  list of dataframes, list, int
     out: dataframe
     """
     tables8 = pd.DataFrame()
