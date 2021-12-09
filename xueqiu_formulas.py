@@ -271,7 +271,7 @@ def infinite_query_threaded_compintro(ticker2, tables2):
     tables2.append (table) 
 def org_table(tickers, tables, row = 0):
     """Organizes a list of tables into one dataframe in the order of specified tickers.
-    Row points to which row to look at in the tables to match with the tickers. Useful for organizing threaded output.
+    Row points to which row to look at in the tables to match with the tickers. The column is always the first column. Useful for organizing threaded output.
     in:  list of dataframes, list, int
     out: dataframe
     """
@@ -283,7 +283,7 @@ def org_table(tickers, tables, row = 0):
         for number in abc:
             try: 
                 tables3 = tables [number]
-                x = tables3.iloc[row, tables3.columns[0]]
+                x = tables3.iloc[row, 0]
                 if x == y:
                     tables8 = pd.concat([tables8,tables3], ignore_index=False, axis = 1)
                     tables = tables[:number]+ tables[number+1:]
